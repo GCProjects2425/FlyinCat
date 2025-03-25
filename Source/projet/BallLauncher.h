@@ -10,8 +10,10 @@
 #include <Components/CapsuleComponent.h>
 #include "FlyinCatCharacter.h"
 
-#include "BallLauncher.generated.h"
+#include <EnhancedInputLibrary.h>
+#include <InputAction.h>
 
+#include "BallLauncher.generated.h"
 
 
 UCLASS()
@@ -47,12 +49,17 @@ public:
 	TSubclassOf<AFlyinCatCharacter> BallClass;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = Inputs)
-	class UInputMappingContext* MappingContext;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputMappingContext* InputMapping;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* LookAction;
 
 	void AddNewMappingContext(UInputMappingContext* newMapping);
 
 	void PretictBallPath();
+
+	void Look(const FInputActionInstance& Instance);
 
 	bool bShouldPredictPath;
 

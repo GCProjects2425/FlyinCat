@@ -1,9 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BallLauncher.h"
-#include "EnhancedInputComponent.h"
+
 #include "EnhancedInputSubsystems.h"
-#include "Components/InputComponent.h"
+#include <EnhancedInputComponent.h>
+#include <InputAction.h>
+#include "InputMappingContext.h"
 
 // Sets default values
 ABallLauncher::ABallLauncher()
@@ -30,6 +32,11 @@ ABallLauncher::ABallLauncher()
 	ArrowBallPos->SetRelativeLocation(FVector(0.0f, 0.0f, 316.0f));
 	ArrowBallPos->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
 
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingAsset(TEXT("/Game/Inputs/IMC_Cat.IMC_Cat"));
+	if (InputMappingAsset.Succeeded())
+	{
+		InputMapping = InputMappingAsset.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -37,25 +44,27 @@ void ABallLauncher::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AddNewMappingContext(MappingContext);
+	AddNewMappingContext(InputMapping);
 
 	GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
 
 	FVector ArrowBallPosWorld = ArrowBallPos->GetComponentLocation();
 
-	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(BallClass, ArrowBallPosWorld, FRotator::ZeroRotator);
-	SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(false);
+	//SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(BallClass, ArrowBallPosWorld, FRotator::ZeroRotator);
+	//SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(false);
 }
 
 void ABallLauncher::AddNewMappingContext(UInputMappingContext* newMapping)
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* LocalPlayerSubsystem 
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		if (UEnhancedInputLocalPlayerSubsystem* LocalPlayerSubsystem
 			= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			LocalPlayerSubsystem->AddMappingContext(newMapping, 0);
-		}		
+		}
 	}
 }
 
@@ -73,10 +82,20 @@ void ABallLauncher::PretictBallPath()
 {
 }
 
+void ABallLauncher::Look(const FInputActionInstance& Instance)
+{
+	FVector2D axisValue = Instance.GetValue().Get<FVector2D>();
+
+	FRotator NewRotation = FRotator(0.0f, axisValue.X, 0.0f);
+	SetActorRotation(NewRotation);
+}
+
 // Called to bind functionality to input
 void ABallLauncher::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	// You can bind to any of the trigger events here by changing the "ETriggerEvent" enum value
+	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABallLauncher::Look);
 
 }
 
