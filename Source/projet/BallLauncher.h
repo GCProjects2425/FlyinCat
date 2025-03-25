@@ -59,7 +59,7 @@ private:
 
 	void PretictBallPath();
 
-	void Look(const FInputActionInstance& Instance);
+	void Look(const FInputActionValue& Value);
 
 	bool bShouldPredictPath;
 

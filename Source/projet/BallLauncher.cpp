@@ -46,7 +46,6 @@ void ABallLauncher::BeginPlay()
 
 	AddNewMappingContext(InputMapping);
 
-	GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
 
 	FVector ArrowBallPosWorld = ArrowBallPos->GetComponentLocation();
 
@@ -58,8 +57,6 @@ void ABallLauncher::AddNewMappingContext(UInputMappingContext* newMapping)
 {
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		PlayerController->bShowMouseCursor = false;
-		PlayerController->SetInputMode(FInputModeGameOnly());
 		if (UEnhancedInputLocalPlayerSubsystem* LocalPlayerSubsystem
 			= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -82,12 +79,12 @@ void ABallLauncher::PretictBallPath()
 {
 }
 
-void ABallLauncher::Look(const FInputActionInstance& Instance)
+void ABallLauncher::Look(const FInputActionValue& Value)
 {
-	FVector2D axisValue = Instance.GetValue().Get<FVector2D>();
+	FVector2D axisValue = Value.Get<FVector2D>();
 
-	FRotator NewRotation = FRotator(0.0f, axisValue.X, 0.0f);
-	SetActorRotation(NewRotation);
+	AddControllerYawInput(axisValue.X);
+	AddControllerPitchInput(-axisValue.Y);
 }
 
 // Called to bind functionality to input
