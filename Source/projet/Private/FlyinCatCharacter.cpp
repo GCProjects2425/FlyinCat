@@ -21,6 +21,7 @@ AFlyinCatCharacter::AFlyinCatCharacter()
     }
 
 	GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetScaledCapsuleRadius());
+	SkeletalMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 }
 
 // Called when the game starts or when spawned
