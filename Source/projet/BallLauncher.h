@@ -13,8 +13,10 @@
 #include <EnhancedInputLibrary.h>
 #include <InputAction.h>
 
-#include "BallLauncher.generated.h"
+#include <GameFramework/SpringArmComponent.h>
+#include <Camera/CameraComponent.h>
 
+#include "BallLauncher.generated.h"
 
 UCLASS()
 class PROJET_API ABallLauncher : public APawn
@@ -45,6 +47,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UArrowComponent* ArrowBallPos;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCameraComponent* Camera;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<AFlyinCatCharacter> BallClass;
 
@@ -55,16 +63,37 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* PullAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* EngageShootAction;
+
 	void AddNewMappingContext(UInputMappingContext* newMapping);
 
 	void PretictBallPath();
 
 	void Look(const FInputActionValue& Value);
 
+	void PullBall(const FInputActionValue& Value);
+
+	void ShootBall();
+
+	void DisablePredictPath();
+
+	void EngageShoot();
+
+	void DisengageShoot();
+
+
+	float StoredImpulseStrength = 0.0f;
+	FVector2D LastJoystickValue = FVector2D::ZeroVector;
+	FVector2D JoystickVelocity = FVector2D::ZeroVector;
+
 	bool bShouldPredictPath;
 
 	bool bCanShoot;
 
 private:
-	AFlyinCatCharacter* SpawnedBall;
+	class AFlyinCatCharacter* SpawnedBall;
 };

@@ -10,18 +10,17 @@ AFlyinCatCharacter::AFlyinCatCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-    SkeletalMeshComponent->SetupAttachment(RootComponent);
-
     // Charger un Skeletal Mesh depuis le Content Browser
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("/Game/Graph/CatBall/Meshes/MSH_cat.MSH_cat"));
     if (MeshAsset.Succeeded())
     {
-        SkeletalMeshComponent->SetSkeletalMesh(MeshAsset.Object);
+        GetMesh()->SetSkeletalMesh(MeshAsset.Object);
     }
 
-	GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetScaledCapsuleRadius());
-	SkeletalMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+	GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetUnscaledCapsuleRadius());
+	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 // Called when the game starts or when spawned
