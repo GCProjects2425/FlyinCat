@@ -35,6 +35,9 @@ ABallLauncher::ABallLauncher()
 	ArrowBallPos->SetRelativeLocation(FVector(0.0f, 0.0f, 316.0f));
 	ArrowBallPos->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
+	ArrowLaunchPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("LaunchPoint"));
+	ArrowLaunchPoint->SetupAttachment(ArrowBallPos);
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(LauncherMesh);
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 260.0f));
@@ -160,9 +163,12 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 	float MaxImpulse = 3000.0f;
 
 	float JoystickStrength = TriggerValue.Size();
-	StoredImpulseStrength = FMath::Lerp(MinImpulse, MaxImpulse, JoystickStrength);	
+	StoredImpulseStrength = FMath::Lerp(MinImpulse, MaxImpulse, JoystickStrength);
 
 	GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(JoystickStrength, 0.1f, false, true, false, true, EDynamicForceFeedbackAction::Start);
+
+	FVector offset = FMath::Lerp(FVector(0.f, 0.f, 0.f), FVector(-100.f, 0.f, 0.f ), JoystickStrength);	
+	ArrowLaunchPoint->SetRelativeLocation(offset);
 }
 
 void ABallLauncher::ShootBall()
@@ -198,12 +204,13 @@ void ABallLauncher::SpawnNewBall()
 
 	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(ArrowBallPosWorld, GetActorRotation());
 	SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(false);
-	SpawnedBall->AttachToComponent(ArrowBallPos, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	SpawnedBall->AttachToComponent(ArrowLaunchPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
 void ABallLauncher::DisablePredictPath()
 {
 	bShouldPredictPath = false;
+	ArrowLaunchPoint->SetRelativeLocation({ 0.f, 0.f, 0.f });
 }
 
 void ABallLauncher::EngageShoot()
