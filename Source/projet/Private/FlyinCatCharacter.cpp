@@ -3,6 +3,7 @@
 
 #include "FlyinCatCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 // Sets default values
 AFlyinCatCharacter::AFlyinCatCharacter()
@@ -29,7 +30,18 @@ void AFlyinCatCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetCapsuleComponent()->SetSimulatePhysics(true);
-	
+	GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 200.f, true);
+    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    GetCapsuleComponent()->SetCollisionObjectType(ECC_PhysicsBody);
+    UPhysicalMaterial* PhysMatBoule = NewObject<UPhysicalMaterial>(this);
+    if (PhysMatBoule)
+    {
+        PhysMatBoule->Friction = 2.5f;
+        PhysMatBoule->FrictionCombineMode = EFrictionCombineMode::Multiply;
+        PhysMatBoule->Restitution = 0.0f;
+
+        GetCapsuleComponent()->SetPhysMaterialOverride(PhysMatBoule);
+    }
 }
 
 // Called every frame
