@@ -99,6 +99,7 @@ void ABallLauncher::BeginPlay()
 
 	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(ArrowBallPosWorld, GetActorRotation());
 	SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(false);
+	SpawnedBall->AttachToComponent(ArrowBallPos, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
 void ABallLauncher::AddNewMappingContext(UInputMappingContext* newMapping)
@@ -129,11 +130,12 @@ void ABallLauncher::PretictBallPath()
 	FVector Start = SpawnedBall->GetActorLocation();
 
 	FPredictProjectilePathResult PredictedPath;
-	bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), FPredictProjectilePathParams(10, Start, GetControlRotation().Vector() * StoredImpulseStrength, 5.f), PredictedPath);
+	FPredictProjectilePathParams Params(10, Start, GetControlRotation().Vector() * StoredImpulseStrength, 5.f);
+	bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), Params, PredictedPath);
 
-	for (FPredictProjectilePathPointData PointData : PredictedPath.PathData)
+	for (FPredictProjectilePathPointData const PointData : PredictedPath.PathData)
 	{
-		DrawDebugSphere(GetWorld(), PointData.Location, 10.0f, 12, FColor::Red, false, 0.1f);
+		DrawDebugSphere(GetWorld(), PointData.Location, 10.0f, 12, FColor::Red, false, 0.f);
 	}
 }
 
@@ -143,10 +145,6 @@ void ABallLauncher::Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(axisValue.X);
 	AddControllerPitchInput(-axisValue.Y);
-
-	//FRotator NewRotation = GetActorRotation();
-	//NewRotation.Yaw = GetControlRotation().Yaw;
-	//SetActorRotation(NewRotation);
 }
 
 void ABallLauncher::PullBall(const FInputActionValue& Value)
@@ -155,8 +153,8 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 
 	FVector2D TriggerValue = Value.Get<FVector2D>();
 
-	float MinImpulse = 3000.0f;
-	float MaxImpulse = 10000.0f;
+	float MinImpulse = 300.0f;
+	float MaxImpulse = 3000.0f;
 
 	float JoystickStrength = TriggerValue.Size();
 	StoredImpulseStrength = FMath::Lerp(MinImpulse, MaxImpulse, JoystickStrength);	
@@ -168,6 +166,8 @@ void ABallLauncher::ShootBall()
 	{
 		if (StoredImpulseStrength > 0.0f)
 		{
+			SpawnedBall->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
 			FVector LaunchDirection = GetControlRotation().Vector();
 			FVector Impulse = LaunchDirection * StoredImpulseStrength;
 
