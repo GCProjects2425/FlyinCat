@@ -85,6 +85,11 @@ void ABallLauncher::BeginPlay()
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if (PlayerController)
 	{
+		FForceFeedbackValues ForceFeedbackValues;
+		ForceFeedbackValues.LeftLarge = 10.f;
+		ForceFeedbackValues.RightLarge = 10.f;
+
+		PlayerController->ForceFeedbackValues = ForceFeedbackValues;
 		APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
 		if (CameraManager)
 		{
