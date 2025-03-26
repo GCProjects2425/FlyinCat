@@ -8,6 +8,8 @@
 #include "InputMappingContext.h"
 #include <Kismet/GameplayStatics.h>
 
+class UPawnMovementComponent;
+
 // Sets default values
 ABallLauncher::ABallLauncher()
 {
@@ -40,6 +42,10 @@ ABallLauncher::ABallLauncher()
 	SpringArm->TargetArmLength = 300.0f;
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->bDoCollisionTest = false;
+	SpringArm->bEnableCameraRotationLag = true;
+	SpringArm->CameraRotationLagSpeed = 5.f;
+
+	bUseControllerRotationYaw = true;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
@@ -84,6 +90,8 @@ void ABallLauncher::BeginPlay()
 		{
 			CameraManager->ViewYawMin = -70.0f;
 			CameraManager->ViewYawMax = 70.0f;
+			CameraManager->ViewPitchMin = -70.0f;
+			CameraManager->ViewPitchMax = 70.0f;
 		}
 	}
 
@@ -135,6 +143,10 @@ void ABallLauncher::Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(axisValue.X);
 	AddControllerPitchInput(-axisValue.Y);
+
+	//FRotator NewRotation = GetActorRotation();
+	//NewRotation.Yaw = GetControlRotation().Yaw;
+	//SetActorRotation(NewRotation);
 }
 
 void ABallLauncher::PullBall(const FInputActionValue& Value)
