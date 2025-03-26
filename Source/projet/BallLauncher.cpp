@@ -85,11 +85,7 @@ void ABallLauncher::BeginPlay()
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if (PlayerController)
 	{
-		FForceFeedbackValues ForceFeedbackValues;
-		ForceFeedbackValues.LeftLarge = 10.f;
-		ForceFeedbackValues.RightLarge = 10.f;
 
-		PlayerController->ForceFeedbackValues = ForceFeedbackValues;
 		APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
 		if (CameraManager)
 		{
@@ -100,11 +96,7 @@ void ABallLauncher::BeginPlay()
 		}
 	}
 
-	FVector ArrowBallPosWorld = ArrowBallPos->GetComponentLocation();
-
-	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(ArrowBallPosWorld, GetActorRotation());
-	SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(false);
-	SpawnedBall->AttachToComponent(ArrowBallPos, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	SpawnNewBall();	
 }
 
 void ABallLauncher::AddNewMappingContext(UInputMappingContext* newMapping)
@@ -131,6 +123,9 @@ void ABallLauncher::Tick(float DeltaTime)
 
 void ABallLauncher::PretictBallPath()
 {
+	if (SpawnedBall == nullptr)
+		return;
+
 	// predict the path of the ball
 	FVector Start = SpawnedBall->GetActorLocation();
 
@@ -138,7 +133,7 @@ void ABallLauncher::PretictBallPath()
 	FPredictProjectilePathParams Params(10, Start, GetControlRotation().Vector() * StoredImpulseStrength, 5.f);
 	bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), Params, PredictedPath);
 
-	for (FPredictProjectilePathPointData const PointData : PredictedPath.PathData)
+	for (const FPredictProjectilePathPointData PointData : PredictedPath.PathData)
 	{
 		DrawDebugSphere(GetWorld(), PointData.Location, 10.0f, 12, FColor::Red, false, 0.f);
 	}
@@ -154,6 +149,9 @@ void ABallLauncher::Look(const FInputActionValue& Value)
 
 void ABallLauncher::PullBall(const FInputActionValue& Value)
 {
+	if (SpawnedBall == nullptr)
+		return;
+
 	bShouldPredictPath = true;
 
 	FVector2D TriggerValue = Value.Get<FVector2D>();
@@ -163,11 +161,13 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 
 	float JoystickStrength = TriggerValue.Size();
 	StoredImpulseStrength = FMath::Lerp(MinImpulse, MaxImpulse, JoystickStrength);	
+
+	GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(JoystickStrength, 0.1f, false, true, false, true, EDynamicForceFeedbackAction::Start);
 }
 
 void ABallLauncher::ShootBall()
 {
-	if (bCanShoot && SpawnedBall)
+	if (bCanShoot && SpawnedBall != nullptr)
 	{
 		if (StoredImpulseStrength > 0.0f)
 		{
@@ -178,12 +178,27 @@ void ABallLauncher::ShootBall()
 
 			SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(true);
 			SpawnedBall->GetCapsuleComponent()->AddImpulse(Impulse, NAME_None, true);
+			GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(1.f, 0.4f, true, true, true, true, EDynamicForceFeedbackAction::Start);
 
 			StoredImpulseStrength = 0.0f;
+
+			SpawnedBall = nullptr;
+
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABallLauncher::SpawnNewBall, 1.0f, false);
 		}
 	}
 
 	DisablePredictPath();
+}
+
+void ABallLauncher::SpawnNewBall()
+{
+	FVector ArrowBallPosWorld = ArrowBallPos->GetComponentLocation();
+
+	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(ArrowBallPosWorld, GetActorRotation());
+	SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(false);
+	SpawnedBall->AttachToComponent(ArrowBallPos, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
 void ABallLauncher::DisablePredictPath()

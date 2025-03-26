@@ -79,6 +79,8 @@ private:
 
 	void ShootBall();
 
+	void SpawnNewBall();
+
 	void DisablePredictPath();
 
 	void EngageShoot();
