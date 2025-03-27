@@ -106,9 +106,26 @@ void ABallLauncher::PretictBallPath()
 	FPredictProjectilePathParams Params(10, Start, GetControlRotation().Vector() * StoredImpulseStrength, 5.f);
 	bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), Params, PredictedPath);
 
+	FPredictProjectilePathPointData& LastPoint = PredictedPath.PathData.Last();
+
 	for (const FPredictProjectilePathPointData& PointData : PredictedPath.PathData)
 	{
-		DrawDebugSphere(GetWorld(), PointData.Location, 10.0f, 12, FColor::Red, false, 0.f);
+		//DrawDebugSphere(GetWorld(), PointData.Location, 10.0f, 12, FColor::Red, false, 0.f);
+
+		// Line trace between the precedent point and the current point
+
+		if (PointData.Location != Start)
+		{
+			FHitResult HitResult;
+			FCollisionQueryParams CollisionParams;
+			CollisionParams.AddIgnoredActor(SpawnedBall);
+			DrawDebugLine(GetWorld(), LastPoint.Location, PointData.Location, FColor::White, false, 0.f, 0, 4.f);
+			
+		}
+		LastPoint = PointData;
+
+
+		
 	}
 }
 
