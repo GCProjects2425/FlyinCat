@@ -119,7 +119,9 @@ void ABallLauncher::PretictBallPath()
 			FHitResult HitResult;
 			FCollisionQueryParams CollisionParams;
 			CollisionParams.AddIgnoredActor(SpawnedBall);
-			DrawDebugLine(GetWorld(), LastPoint.Location, PointData.Location, FColor::White, false, 0.f, 0, 4.f);
+#if UE_BUILD_SHIPPING
+			UKismetSystemLibrary::DrawDebugLine(GetWorld(), LastPoint.Location, PointData.Location, FColor::White, false, 0.f, 0, 4.f);
+#endif
 
 		}
 		LastPoint = PointData;
