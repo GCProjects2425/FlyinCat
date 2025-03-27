@@ -63,10 +63,10 @@ void ABallLauncher::BeginPlay()
 		APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
 		if (CameraManager)
 		{
-			CameraManager->ViewYawMin = -70.0f;
-			CameraManager->ViewYawMax = 70.0f;
-			CameraManager->ViewPitchMin = -70.0f;
-			CameraManager->ViewPitchMax = 70.0f;
+			CameraManager->ViewYawMin = GetActorRotation().Yaw - 70.0f;
+			CameraManager->ViewYawMax = GetActorRotation().Yaw + 70.0f;
+			CameraManager->ViewPitchMin = GetActorRotation().Pitch - 50.0f;
+			CameraManager->ViewPitchMax = GetActorRotation().Pitch + 50.0f;
 		}
 	}
 
@@ -138,23 +138,23 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 
 	GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(JoystickStrength, 0.1f, false, true, false, true, EDynamicForceFeedbackAction::Start);
 
-
 	FVector Xoffset = FMath::Lerp(FVector(0.f, 0.f, 0.f), FVector(-100.f, 0.f, 0.f ), JoystickStrength);
 
-	
 	float Pitch = GetControlRotation().Pitch;
 	if (Pitch <= 70.0f)
 	{
 		Pitch += 360.0f; // Convertir 70° -> 430° pour garder l'ordre croissant
 	}
-
+	
 	// Normalisation entre [290, 430] vers [0,1]
 	float NormalizedValue = FMath::Clamp((Pitch - 290.0f) / (430.0f - 290.0f), 0.0f, 1.0f);
-
+	
 	FVector Zoffset = FMath::Lerp(FVector(0.f, 0.f, 30.f), FVector(0.f, 0.f, -30.f), NormalizedValue);
-
+	
 	FVector offset = Xoffset + Zoffset;
 	ArrowLaunchPoint->SetRelativeLocation(offset);
+
+	ArrowLaunchPoint->SetRelativeRotation(FRotator(GetControlRotation().Pitch, 0.f, 0.f));
 }
 
 void ABallLauncher::ShootBall()
@@ -200,6 +200,7 @@ void ABallLauncher::DisablePredictPath()
 {
 	bShouldPredictPath = false;
 	ArrowLaunchPoint->SetRelativeLocation({ 0.f, 0.f, 0.f });
+	ArrowLaunchPoint->SetRelativeRotation({ 0.f, 0.f, 0.f });
 }
 
 void ABallLauncher::EngageShoot()
