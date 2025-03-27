@@ -21,20 +21,6 @@ AFlyinCatCharacter::AFlyinCatCharacter()
     SkeletalMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -CapsuleComponent->GetUnscaledCapsuleHalfHeight()));
     SkeletalMeshComponent->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
     SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-    // Charger un Skeletal Mesh depuis le Content Browser
-    static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("/Game/Graph/CatBall/Meshes/MSH_cat.MSH_cat"));
-    if (MeshAsset.Succeeded())
-    {
-        SkeletalMeshComponent->SetSkeletalMesh(MeshAsset.Object);
-    }
-
-    static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBPClass(TEXT("/Game/Graph/CatBall/Anims/ABP_Cat.ABP_Cat_C"));
-    if (AnimBPClass.Succeeded())
-    {
-        SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-        SkeletalMeshComponent->SetAnimClass(AnimBPClass.Class);
-    }
 }
 
 // Called when the game starts or when spawned
@@ -55,23 +41,5 @@ void AFlyinCatCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
-
-void AFlyinCatCharacter::PlayFlyinAnimation()
-{
-    PlayFlyinMontage();
-}
-
-void AFlyinCatCharacter::PlayFlyinMontage()
-{
-    UAnimInstance* AnimInstance = SkeletalMeshComponent->GetAnimInstance();
-    if (!AnimInstance)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Pas d'AnimInstance trouvé !"));
-        return;
-    }
-
-    FOutputDeviceNull ar;
-    AnimInstance->CallFunctionByNameWithArguments(TEXT("PlayFlyinMontage"), ar, NULL, true);
 }
 

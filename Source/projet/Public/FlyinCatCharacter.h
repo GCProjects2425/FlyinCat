@@ -26,8 +26,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void PlayFlyinAnimation();
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UCapsuleComponent* CapsuleComponent;
 
@@ -35,6 +33,4 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USkeletalMeshComponent* SkeletalMeshComponent;
 
-	UFUNCTION(BlueprintCallable)
-	void PlayFlyinMontage();
 };

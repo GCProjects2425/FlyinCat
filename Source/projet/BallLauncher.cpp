@@ -22,13 +22,8 @@ ABallLauncher::ABallLauncher()
 	LauncherMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BallMesh"));
 	LauncherMesh->SetupAttachment(CapsuleComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/Assets/SlingShot.SlingShot"));
-	if (MeshAsset.Succeeded())
-	{
-		LauncherMesh->SetStaticMesh(MeshAsset.Object);
-		LauncherMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -56.0f));
-		LauncherMesh->SetRelativeRotation(FRotator( 0.0f, 90.0f, 0.0f));
-	}
+	LauncherMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -56.0f));
+	LauncherMesh->SetRelativeRotation(FRotator( 0.0f, 90.0f, 0.0f));
 
 	ArrowBallPos = CreateDefaultSubobject<UArrowComponent>(TEXT("LaunchPosition"));
 	ArrowBallPos->SetupAttachment(LauncherMesh);
@@ -52,30 +47,6 @@ ABallLauncher::ABallLauncher()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
-		
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingAsset(TEXT("/Game/Inputs/IMC_Launcher.IMC_Launcher"));
-	if (InputMappingAsset.Succeeded())
-	{
-		InputMapping = InputMappingAsset.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> LookActionAsset(TEXT("/Game/Inputs/Actions/IA_Look.IA_Look"));
-	if (LookActionAsset.Succeeded())
-	{
-		LookAction = LookActionAsset.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> PullActionAsset(TEXT("/Game/Inputs/Actions/IA_Pull.IA_Pull"));
-	if (PullActionAsset.Succeeded())
-	{
-		PullAction = PullActionAsset.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> EngageShootActionAsset(TEXT("/Game/Inputs/Actions/IA_EngageShoot.IA_EngageShoot"));
-	if (PullActionAsset.Succeeded())
-	{
-		EngageShootAction = EngageShootActionAsset.Object;
-	}
 }
 
 // Called when the game starts or when spawned
@@ -184,7 +155,6 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 
 	FVector offset = Xoffset + Zoffset;
 	ArrowLaunchPoint->SetRelativeLocation(offset);
-	SpawnedBall->PlayFlyinAnimation();
 }
 
 void ABallLauncher::ShootBall()
@@ -219,8 +189,11 @@ void ABallLauncher::SpawnNewBall()
 	FVector ArrowBallPosWorld = ArrowBallPos->GetComponentLocation();
 
 	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(BallClass, ArrowBallPosWorld, GetActorRotation());
-	SpawnedBall->CapsuleComponent->SetSimulatePhysics(false);
-	SpawnedBall->AttachToComponent(ArrowLaunchPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	if (SpawnedBall)
+	{
+		SpawnedBall->CapsuleComponent->SetSimulatePhysics(false);
+		SpawnedBall->AttachToComponent(ArrowLaunchPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	}
 }
 
 void ABallLauncher::DisablePredictPath()
