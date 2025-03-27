@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "FlyinCatCharacter.generated.h"
 
 UCLASS()
@@ -26,11 +28,26 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void SwitchCamera();
+	void OnShooted();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UCapsuleComponent* CapsuleComponent;
 
 	// Skeletal Mesh Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USkeletalMeshComponent* SkeletalMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	USpringArmComponent* ThirdPersonSpringArm;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	UCameraComponent* ThirdPersonCamera;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	UCameraComponent* FirstPersonCamera;
+
+private:
+	UCameraComponent* ActiveCamera;
 
 };

@@ -70,6 +70,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* EngageShootAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* CameraAction;
 private:
 
 	void AddNewMappingContext(UInputMappingContext* newMapping);
@@ -89,6 +92,8 @@ private:
 	void EngageShoot();
 
 	void DisengageShoot();
+
+	void SwitchCamera();
 
 
 	float StoredImpulseStrength = 0.0f;
