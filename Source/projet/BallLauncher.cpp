@@ -40,9 +40,9 @@ ABallLauncher::ABallLauncher()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(LauncherMesh);
-	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 260.0f));
-	SpringArm->TargetOffset = FVector(0.0f, 0.0f, 80.0f);
-	SpringArm->TargetArmLength = 300.0f;
+	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 320.0f));
+	SpringArm->TargetOffset = FVector(0.0f, 0.0f, 100.0f);
+	SpringArm->TargetArmLength = 400.0f;
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->bDoCollisionTest = false;
 	SpringArm->bEnableCameraRotationLag = true;
@@ -136,7 +136,7 @@ void ABallLauncher::PretictBallPath()
 	FPredictProjectilePathParams Params(10, Start, GetControlRotation().Vector() * StoredImpulseStrength, 5.f);
 	bool bHit = UGameplayStatics::PredictProjectilePath(GetWorld(), Params, PredictedPath);
 
-	for (const FPredictProjectilePathPointData PointData : PredictedPath.PathData)
+	for (const FPredictProjectilePathPointData& PointData : PredictedPath.PathData)
 	{
 		DrawDebugSphere(GetWorld(), PointData.Location, 10.0f, 12, FColor::Red, false, 0.f);
 	}
@@ -167,7 +167,22 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 
 	GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(JoystickStrength, 0.1f, false, true, false, true, EDynamicForceFeedbackAction::Start);
 
-	FVector offset = FMath::Lerp(FVector(0.f, 0.f, 0.f), FVector(-100.f, 0.f, 0.f ), JoystickStrength);	
+
+	FVector Xoffset = FMath::Lerp(FVector(0.f, 0.f, 0.f), FVector(-100.f, 0.f, 0.f ), JoystickStrength);
+
+	
+	float Pitch = GetControlRotation().Pitch;
+	if (Pitch <= 70.0f)
+	{
+		Pitch += 360.0f; // Convertir 70° -> 430° pour garder l'ordre croissant
+	}
+
+	// Normalisation entre [290, 430] vers [0,1]
+	float NormalizedValue = FMath::Clamp((Pitch - 290.0f) / (430.0f - 290.0f), 0.0f, 1.0f);
+
+	FVector Zoffset = FMath::Lerp(FVector(0.f, 0.f, 30.f), FVector(0.f, 0.f, -30.f), NormalizedValue);
+
+	FVector offset = Xoffset + Zoffset;
 	ArrowLaunchPoint->SetRelativeLocation(offset);
 }
 
