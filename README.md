@@ -14,7 +14,7 @@
 | -------------------------- | ----------------- | --------------------------------- |
 | **Tendre le lance-pierre** | `S`               | `Left Joystick` / `Right Trigger` |
 | **Engager le tir**         | `Espace`          | `A`                               |
-| **Tirer**                  | Release `Espace`  | Release `A`                       |
+| **Tirer**                  | Relacher `Espace`  | Relacher `A`                       |
 | **Viser/Direction**        | `Souris`          | `Right Joystick`                  |
 | **Revenir au menu**        | `Échap`           | `Start Button (≡)`                |
 
