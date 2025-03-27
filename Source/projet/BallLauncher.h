@@ -59,7 +59,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<AFlyinCatCharacter> BallClass;
 
-private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputMappingContext* InputMapping;
 
@@ -71,6 +70,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* EngageShootAction;
+private:
 
 	void AddNewMappingContext(UInputMappingContext* newMapping);
 

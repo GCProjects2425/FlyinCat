@@ -7,7 +7,7 @@
 #include "FlyinCatCharacter.generated.h"
 
 UCLASS()
-class PROJET_API AFlyinCatCharacter : public ACharacter
+class PROJET_API AFlyinCatCharacter : public APawn
 {
 	GENERATED_BODY()
 
@@ -26,4 +26,15 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void PlayFlyinAnimation();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UCapsuleComponent* CapsuleComponent;
+
+	// Skeletal Mesh Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class USkeletalMeshComponent* SkeletalMeshComponent;
+
+	UFUNCTION(BlueprintCallable)
+	void PlayFlyinMontage();
 };

@@ -4,44 +4,43 @@
 #include "FlyinCatCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include <Misc/OutputDeviceNull.h>
 
 // Sets default values
 AFlyinCatCharacter::AFlyinCatCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+    CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
+    CapsuleComponent->InitCapsuleSize(34.f, 34.f);
+	CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    SetRootComponent(CapsuleComponent);
+
+    SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+    SkeletalMeshComponent->SetupAttachment(CapsuleComponent);
+    SkeletalMeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -CapsuleComponent->GetUnscaledCapsuleHalfHeight()));
+    SkeletalMeshComponent->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+    SkeletalMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     // Charger un Skeletal Mesh depuis le Content Browser
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("/Game/Graph/CatBall/Meshes/MSH_cat.MSH_cat"));
     if (MeshAsset.Succeeded())
     {
-        GetMesh()->SetSkeletalMesh(MeshAsset.Object);
+        SkeletalMeshComponent->SetSkeletalMesh(MeshAsset.Object);
     }
 
-	GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetUnscaledCapsuleRadius());
-	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
-	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBPClass(TEXT("/Game/Graph/CatBall/Anims/ABP_Cat.ABP_Cat_C"));
+    if (AnimBPClass.Succeeded())
+    {
+        SkeletalMeshComponent->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+        SkeletalMeshComponent->SetAnimClass(AnimBPClass.Class);
+    }
 }
 
 // Called when the game starts or when spawned
 void AFlyinCatCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GetCapsuleComponent()->SetSimulatePhysics(true);
-	GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 200.f, true);
-    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    GetCapsuleComponent()->SetCollisionObjectType(ECC_PhysicsBody);
-    UPhysicalMaterial* PhysMatBoule = NewObject<UPhysicalMaterial>(this);
-    if (PhysMatBoule)
-    {
-        PhysMatBoule->Friction = 2.5f;
-        PhysMatBoule->FrictionCombineMode = EFrictionCombineMode::Multiply;
-        PhysMatBoule->Restitution = 0.0f;
-
-        GetCapsuleComponent()->SetPhysMaterialOverride(PhysMatBoule);
-    }
 }
 
 // Called every frame
@@ -56,5 +55,23 @@ void AFlyinCatCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AFlyinCatCharacter::PlayFlyinAnimation()
+{
+    PlayFlyinMontage();
+}
+
+void AFlyinCatCharacter::PlayFlyinMontage()
+{
+    UAnimInstance* AnimInstance = SkeletalMeshComponent->GetAnimInstance();
+    if (!AnimInstance)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Pas d'AnimInstance trouvé !"));
+        return;
+    }
+
+    FOutputDeviceNull ar;
+    AnimInstance->CallFunctionByNameWithArguments(TEXT("PlayFlyinMontage"), ar, NULL, true);
 }
 

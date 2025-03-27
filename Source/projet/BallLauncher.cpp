@@ -184,6 +184,7 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 
 	FVector offset = Xoffset + Zoffset;
 	ArrowLaunchPoint->SetRelativeLocation(offset);
+	SpawnedBall->PlayFlyinAnimation();
 }
 
 void ABallLauncher::ShootBall()
@@ -197,8 +198,8 @@ void ABallLauncher::ShootBall()
 			FVector LaunchDirection = GetControlRotation().Vector();
 			FVector Impulse = LaunchDirection * StoredImpulseStrength;
 
-			SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(true);
-			SpawnedBall->GetCapsuleComponent()->AddImpulse(Impulse, NAME_None, true);
+			SpawnedBall->CapsuleComponent->SetSimulatePhysics(true);
+			SpawnedBall->CapsuleComponent->AddImpulse(Impulse, NAME_None, true);
 			GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(1.f, 0.4f, true, true, true, true, EDynamicForceFeedbackAction::Start);
 
 			StoredImpulseStrength = 0.0f;
@@ -217,8 +218,8 @@ void ABallLauncher::SpawnNewBall()
 {
 	FVector ArrowBallPosWorld = ArrowBallPos->GetComponentLocation();
 
-	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(ArrowBallPosWorld, GetActorRotation());
-	SpawnedBall->GetCapsuleComponent()->SetSimulatePhysics(false);
+	SpawnedBall = GetWorld()->SpawnActor<AFlyinCatCharacter>(BallClass, ArrowBallPosWorld, GetActorRotation());
+	SpawnedBall->CapsuleComponent->SetSimulatePhysics(false);
 	SpawnedBall->AttachToComponent(ArrowLaunchPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
