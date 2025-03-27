@@ -15,7 +15,7 @@ AFlyinCatCharacter::AFlyinCatCharacter()
     CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
     CapsuleComponent->InitCapsuleSize(34.f, 34.f);
 	CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    SetRootComponent(CapsuleComponent);
+	SetRootComponent(CapsuleComponent);
 
     SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
     SkeletalMeshComponent->SetupAttachment(CapsuleComponent);
@@ -27,7 +27,12 @@ AFlyinCatCharacter::AFlyinCatCharacter()
     ThirdPersonSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
     ThirdPersonSpringArm->SetupAttachment(RootComponent);
     ThirdPersonSpringArm->TargetArmLength = 350.f;
-    ThirdPersonSpringArm->bUsePawnControlRotation = false;
+    ThirdPersonSpringArm->bUsePawnControlRotation = true;
+
+    ThirdPersonSpringArm->bInheritPitch = false;
+    ThirdPersonSpringArm->bInheritYaw = false;
+    ThirdPersonSpringArm->bInheritRoll = false;
+
 	// third-person camera
     ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
     ThirdPersonCamera->SetupAttachment(ThirdPersonSpringArm);
@@ -52,7 +57,6 @@ void AFlyinCatCharacter::BeginPlay()
 void AFlyinCatCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -64,22 +68,37 @@ void AFlyinCatCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AFlyinCatCharacter::SwitchCamera()
 {
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-    if (!PlayerController)
-        return;
-
-    ActiveCamera = (ActiveCamera == ThirdPersonCamera) ? FirstPersonCamera : ThirdPersonCamera;
-
-    PlayerController->SetViewTargetWithBlend(this, 0.5f);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Switching camera to %s"), ActiveCamera == ThirdPersonCamera ? TEXT("ThirdPersonCamera") : TEXT("FirstPersonCamera")));
+	//APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+    //if (!PlayerController)
+    //    return;
+    //
+    //if (ActiveCamera == ThirdPersonCamera)
+    //{
+    //    ThirdPersonCamera->SetActive(false);
+    //    FirstPersonCamera->SetActive(true);
+    //    ActiveCamera = FirstPersonCamera;
+    //}
+    //else
+    //{
+    //    FirstPersonCamera->SetActive(false);
+    //    ThirdPersonCamera->SetActive(true);
+    //    ActiveCamera = ThirdPersonCamera;
+    //}
+    //
+    //PlayerController->SetViewTargetWithBlend(this, 0.5f);
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Switching camera to %s"), ActiveCamera == ThirdPersonCamera ? TEXT("ThirdPersonCamera") : TEXT("FirstPersonCamera")));
 }
 
 void AFlyinCatCharacter::OnShooted()
 {
+	FRotator NewRotation = GetActorRotation();
+	NewRotation.Pitch = -20.f;
+    ThirdPersonSpringArm->SetRelativeRotation(NewRotation);
+
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
     if (PlayerController)
     {
-        PlayerController->SetViewTargetWithBlend(this, 0.2f);
+        PlayerController->SetViewTargetWithBlend(this, 0.5f);
     }
 }
 
