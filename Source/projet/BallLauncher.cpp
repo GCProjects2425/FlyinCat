@@ -120,12 +120,9 @@ void ABallLauncher::PretictBallPath()
 			FCollisionQueryParams CollisionParams;
 			CollisionParams.AddIgnoredActor(SpawnedBall);
 			DrawDebugLine(GetWorld(), LastPoint.Location, PointData.Location, FColor::White, false, 0.f, 0, 4.f);
-			
+
 		}
 		LastPoint = PointData;
-
-
-		
 	}
 }
 
