@@ -92,7 +92,6 @@ void ABallLauncher::Tick(float DeltaTime)
 
 	if (bShouldPredictPath)	
 		PretictBallPath();
-
 }
 
 void ABallLauncher::PretictBallPath()
@@ -139,7 +138,7 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 	GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(JoystickStrength, 0.1f, false, true, false, true, EDynamicForceFeedbackAction::Start);
 
 	FVector Xoffset = FMath::Lerp(FVector(0.f, 0.f, 0.f), FVector(-100.f, 0.f, 0.f ), JoystickStrength);
-
+	
 	float Pitch = GetControlRotation().Pitch;
 	if (Pitch <= 70.0f)
 	{
@@ -154,7 +153,10 @@ void ABallLauncher::PullBall(const FInputActionValue& Value)
 	FVector offset = Xoffset + Zoffset;
 	ArrowLaunchPoint->SetRelativeLocation(offset);
 
-	ArrowLaunchPoint->SetRelativeRotation(FRotator(GetControlRotation().Pitch, 0.f, 0.f));
+	FRotator NewRotation = ArrowBallPos->GetRelativeRotation();
+	NewRotation.Pitch = GetControlRotation().Pitch;
+
+	ArrowBallPos->SetRelativeRotation(NewRotation);
 }
 
 void ABallLauncher::ShootBall()
@@ -168,6 +170,7 @@ void ABallLauncher::ShootBall()
 			FVector LaunchDirection = GetControlRotation().Vector();
 			FVector Impulse = LaunchDirection * StoredImpulseStrength;
 
+			SpawnedBall->OnShooted();
 			SpawnedBall->CapsuleComponent->SetSimulatePhysics(true);
 			SpawnedBall->CapsuleComponent->AddImpulse(Impulse, NAME_None, true);
 			GetWorld()->GetFirstPlayerController()->PlayDynamicForceFeedback(1.f, 0.4f, true, true, true, true, EDynamicForceFeedbackAction::Start);
@@ -177,7 +180,7 @@ void ABallLauncher::ShootBall()
 			SpawnedBall = nullptr;
 
 			FTimerHandle TimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABallLauncher::SpawnNewBall, 1.0f, false);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABallLauncher::SpawnNewBall, 5.f, false);
 		}
 	}
 
@@ -193,6 +196,8 @@ void ABallLauncher::SpawnNewBall()
 	{
 		SpawnedBall->CapsuleComponent->SetSimulatePhysics(false);
 		SpawnedBall->AttachToComponent(ArrowLaunchPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+
+		GetWorld()->GetFirstPlayerController()->SetViewTargetWithBlend(this, 1.f);
 	}
 }
 
@@ -214,6 +219,12 @@ void ABallLauncher::DisengageShoot()
 	bCanShoot = false;
 }
 
+void ABallLauncher::SwitchCamera()
+{
+	if(SpawnedBall)
+		SpawnedBall->SwitchCamera();
+}
+
 // Called to bind functionality to input
 void ABallLauncher::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -226,6 +237,6 @@ void ABallLauncher::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Input->BindAction(EngageShootAction, ETriggerEvent::Triggered, this, &ABallLauncher::EngageShoot);
 	Input->BindAction(EngageShootAction, ETriggerEvent::Canceled, this, &ABallLauncher::DisengageShoot);
 	Input->BindAction(EngageShootAction, ETriggerEvent::Completed, this, &ABallLauncher::DisengageShoot);
-
+	Input->BindAction(CameraAction, ETriggerEvent::Started, this, &ABallLauncher::SwitchCamera);
 }
 
